@@ -1,0 +1,123 @@
+#Splits bam reads into multiple reads based on Poly A sequences, creating a new samfile
+
+def find_polyA(test_seq):
+    list_locs = {}
+    last_A = 0
+    cont = False
+    for i in range(len(test_seq)):
+        if test_seq[i] == 'A':
+            if cont == False:
+                cont = True
+                last_A = i
+            else:
+                pass
+        else: 
+            if cont:
+                cont = False
+                if i-last_A >4:
+                    list_locs[last_A]=i-last_A
+            else:
+                pass
+    return(list_locs)  
+
+def no_ipd_split(infile, outfile):
+    textfile = open(outfile, "w")
+    textfile.close()
+
+    line = ""
+    with open(infile) as f:
+        for line in f:
+            seq = (line.split('\t'))
+            poly_seq = find_polyA(seq[9])
+            if len(poly_seq)>0:
+                prev = 0
+                line = ""
+                for i, key in enumerate(poly_seq):
+                    line = ""
+                    if i == 0:
+                        line = line + seq[0].split('/')[0] + '/' + seq[0].split('/')[1] + '/' + '0_'+ str(key)
+                        line  = line + '\t' + seq[1] + '\t' + seq[2] + '\t' + seq[3] + '\t' + seq[4] + '\t' + seq[5] + '\t' + seq[6] + '\t' + seq[7] + '\t' + seq[8] + '\t'
+                        line = line + seq[9][0:key] + '\t' + seq[10][0:key] + '\t' + seq[11] + '\t'
+
+                        line  = line + seq[12] + '\t' + seq[13] + '\t' + seq[14] + '\t' + seq[15] + '\t' + seq[16] + '\t' + seq[17] + '\t' + seq[18] 
+                        try:
+                            line  = line + '\t' + seq[19]
+                        except:
+                            pass
+
+                        prev = key + poly_seq[key]
+                        textfile = open(outfile, "a")
+                        textfile.write(line)
+                        textfile.close()
+                    else:
+                        line = line + seq[0].split('/')[0] + '/' + seq[0].split('/')[1] + '/' + str(prev) + '_' + str(key)
+                        line  = line + '\t' + seq[1] + '\t' + seq[2] + '\t' + seq[3] + '\t' + seq[4] + '\t' + seq[5] + '\t' + seq[6] + '\t' + seq[7] + '\t' + seq[8] + '\t'
+                        line = line + seq[9][prev:key] + '\t' + seq[10][prev:key] + '\t' + seq[11] + '\t'
+
+                        line  = line + seq[12] + '\t' + seq[13] + '\t' + seq[14] + '\t' + seq[15] + '\t' + seq[16] + '\t' + seq[17] + '\t' + seq[18] 
+
+                        try:
+                            line  = line + '\t' + seq[19]
+                        except:
+                            pass
+
+                        prev = key + poly_seq[key]
+                        textfile = open(outfile, "a")
+                        textfile.write(line)
+                        textfile.close()
+                    
+                    
+                    
+                    
+                    
+def ipd_split(infile, outfile):                    
+    textfile = open(outfile, "w")
+    textfile.close()
+
+    line = ""
+    with open(infile) as f:
+        for line in f:
+            seq = (line.split('\t'))
+            poly_seq = find_polyA(seq[9])
+            if len(poly_seq)>0:
+                prev = 0
+                line = ""
+                for i, key in enumerate(poly_seq):
+                    line = ""
+                    if i == 0:
+                        line = line + seq[0].split('/')[0] + '/' + seq[0].split('/')[1] + '/' + '0_'+ str(key)
+                        line  = line + '\t' + seq[1] + '\t' + seq[2] + '\t' + seq[3] + '\t' + seq[4] + '\t' + seq[5] + '\t' + seq[6] + '\t' + seq[7] + '\t' + seq[8] + '\t'
+                        line = line + seq[9][0:key] + '\t' + seq[10][0:key] + '\t' + seq[11] + '\t' + seq[12] + '\t'
+
+                        ipd_line = ""
+                        ipds = test_ipd.split(',')
+                        for i in range(0,key+1):
+                            ipd_line = ipd_line + str(ipds[i]) + ','
+                        line  = line + ipd_line + '\t' + seq[14] + '\t' + seq[15] + '\t' + seq[16] + '\t' + seq[17] + '\t' + seq[18] 
+                        try:
+                            line  = line + '\t' + seq[19]
+                        except:
+                            pass
+                        prev = key + poly_seq[key]
+                        textfile = open(outfile, "a")
+                        textfile.write(line)
+                        textfile.close()
+                    else:
+                        line = line + seq[0].split('/')[0] + '/' + seq[0].split('/')[1] + '/' + str(prev) + '_' + str(key)
+                        line  = line + '\t' + seq[1] + '\t' + seq[2] + '\t' + seq[3] + '\t' + seq[4] + '\t' + seq[5] + '\t' + seq[6] + '\t' + seq[7] + '\t' + seq[8] + '\t'
+                        line = line + seq[9][prev:key] + '\t' + seq[10][prev:key] + '\t' + seq[11] + '\t' + seq[12] + '\t'
+
+                        ipd_line = ""
+                        ipds = test_ipd.split(',')
+                        for i in [1]+list(range(prev+1,key+1)):
+                            ipd_line = ipd_line + str(ipds[i]) + ','
+                        line  = line + ipd_line + '\t' + seq[14] + '\t' + seq[15] + '\t' + seq[16] + '\t' + seq[17] + '\t' + seq[18]
+                        try:
+                            line  = line + '\t' + seq[19]
+                        except:
+                            pass
+
+                        prev = key + poly_seq[key]
+                        textfile = open(outfile, "a")
+                        textfile.write(line)
+                        textfile.close()
