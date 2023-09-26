@@ -7,6 +7,7 @@ def scat3D(x1, y1, z1, tile_list):
     pl = False
     sb = False
     itr = False
+    
 
     ref_dict = {1:{'ref':x1, 'list' : xl, 'tf' : pl},
            2:{'ref':z1, 'list' : zl, 'tf' : sb},
